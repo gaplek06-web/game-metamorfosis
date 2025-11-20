@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Game Metamorfosis 2 Pemain - 9 Soal</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+    background: url(background.jpg) no-repeat center center fixed;
+    background-size: cover;
+  }
+  .player {
+    flex: 1;
+    border-right: 2px solid #000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    position: relative;
+    transition: background 0.3s;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 10px;
+    margin: 5px;
+  }
+  .player:last-child { border-right: none; }
+  img {
+    width: 200px;
+    height: 200px;
+    object-fit: contain;
+    margin-bottom: 20px;
+    animation: fadeIn 0.5s;
+  }
+  button {
+    padding: 12px 25px;
+    margin: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 10px;
+    background-color: #00796b;
+    color: white;
+    transition: transform 0.2s;
+  }
+  button:active { transform: scale(0.95); }
+  h2, h3 { margin: 10px; }
+  .timer { position: absolute; top: 10px; font-size: 24px; font-weight: bold; }
+  .scoreboard { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: #fff; padding: 30px; border-radius: 15px; display: none; text-align: center; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+  }
+</style>
+</head>
+<body>
+
+<div class="player" id="p1">
+  <h2>Pemain 1</h2>
+  <div class="timer" id="timer1">10</div>
+  <img id="img1" src="" alt="hewan" />
+  <button onclick="answer(1, 'sempurna')">Metamorfosis Sempurna</button>
+  <button onclick="answer(1, 'tidak')">Metamorfosis Tidak Sempurna</button>
+  <h3>Skor: <span id="score1">0</span></h3>
+</div>
+
+<div class="player" id="p2">
+  <h2>Pemain 2</h2>
+  <div class="timer" id="timer2">10</div>
+  <img id="img2" src="" alt="hewan" />
+  <button onclick="answer(2, 'sempurna')">Metamorfosis Sempurna</button>
+  <button onclick="answer(2, 'tidak')">Metamorfosis Tidak Sempurna</button>
+  <h3>Skor: <span id="score2">0</span></h3>
+</div>
+
+<div class="scoreboard" id="scoreboard">
+  <h2>Permainan Selesai!</h2>
+  <p id="winner"></p>
+  <button onclick="restartGame()">Main Lagi</button>
+</div>
+
+<script>
+const data = [
+  { img: "https://i.imgur.com/7yUVe5G.png", type: "sempurna", sound: "https://www.fesliyanstudios.com/play-mp3/387" }, // Kupu-kupu
+  { img: "nyamuk.jpg", type: "sempurna", sound: "https://www.fesliyanstudios.com/play-mp3/388" }, // Nyamuk
+  { img: "belalang.jpg", type: "tidak", sound: "https://www.fesliyanstudios.com/play-mp3/389" }, // Belalang
+  { img: "kecoa.png", type: "tidak", sound: "https://www.fesliyanstudios.com/play-mp3/390" }, // Kecoa
+  { img: "katak.jpg", type: "sempurna", sound: "https://www.fesliyanstudios.com/play-mp3/391" }, // Katak
+  { img: "capung.jpg", type: "tidak", sound: "https://www.fesliyanstudios.com/play-mp3/392" }, // Capung
+  { img: "jangkrik.webp", type: "tidak", sound: "https://www.fesliyanstudios.com/play-mp3/392" }, // Jangkrik
+  { img: "kupu2.jpg", type: "sempurna", sound: "https://www.fesliyanstudios.com/play-mp3/391" }, // Kupu2
+  { img: "lebah.jpg", type: "sempurna", sound: "https://www.fesliyanstudios.com/play-mp3/391" }, // Lebah
+  { img: "lalat.webp", type: "sempurna", sound: "https://www.fesliyanstudios.com/play-mp3/391" }, // Lalat
+];
+
+let score = {1: 0, 2: 0};
+let current1, current2;
+let timer1, timer2;
+let timeLeft1 = 10, timeLeft2 = 10;
+let rounds = 0;
+const maxRounds = 9;
+
+function randomAnimal(exclude=null) {
+  let choices = data;
+  if(exclude) choices = data.filter(d => d.img !== exclude);
+  return choices[Math.floor(Math.random() * choices.length)];
+}
+
+function loadImages() {
+  if(rounds >= maxRounds) { showScoreboard(); return; }
+  current1 = randomAnimal();
+  current2 = randomAnimal(current1.img);
+  document.getElementById("img1").src = current1.img;
+  document.getElementById("img2").src = current2.img;
+  playSound(current1.sound);
+  playSound(current2.sound);
+  resetTimers();
+  rounds++;
+}
+
+function playSound(url) {
+  const audio = new Audio(url);
+  audio.play();
+}
+
+function answer(player, ans) {
+  let current = player === 1 ? current1 : current2;
+  if (current.type === ans) {
+    score[player] += 10;
+    document.getElementById(`score${player}`).innerText = score[player];
+    document.getElementById(`p${player}`).style.background = '#c8e6c9';
+  } else {
+    document.getElementById(`p${player}`).style.background = '#ffcdd2';
+  }
+  setTimeout(() => document.getElementById(`p${player}`).style.background = 'rgba(255,255,255,0.7)', 500);
+  loadImages();
+}
+
+function resetTimers() {
+  clearInterval(timer1); clearInterval(timer2);
+  timeLeft1 = 10; timeLeft2 = 10;
+  document.getElementById('timer1').innerText = timeLeft1;
+  document.getElementById('timer2').innerText = timeLeft2;
+
+  timer1 = setInterval(() => {
+    timeLeft1--;
+    document.getElementById('timer1').innerText = timeLeft1;
+    if(timeLeft1 <= 0) { clearInterval(timer1); loadImages(); }
+  }, 1000);
+
+  timer2 = setInterval(() => {
+    timeLeft2--;
+    document.getElementById('timer2').innerText = timeLeft2;
+    if(timeLeft2 <= 0) { clearInterval(timer2); loadImages(); }
+  }, 1000);
+}
+
+function showScoreboard() {
+  document.getElementById('scoreboard').style.display = 'block';
+  let winnerText = '';
+  if(score[1] > score[2]) winnerText = 'Pemain 1 Menang!';
+  else if(score[2] > score[1]) winnerText = 'Pemain 2 Menang!';
+  else winnerText = 'Seri!';
+  document.getElementById('winner').innerText = winnerText;
+  playSound('https://www.fesliyanstudios.com/play-mp3/666');
+}
+
+function restartGame() {
+  score = {1:0, 2:0};
+  rounds = 0;
+  document.getElementById('score1').innerText = 0;
+  document.getElementById('score2').innerText = 0;
+  document.getElementById('scoreboard').style.display = 'none';
+  loadImages();
+}
+
+loadImages();
+</script>
+</body>
+</html>
